@@ -32,16 +32,12 @@ def fancy_legend(leg):
         lh.set_linewidth(1)
 
 
-def autocorrelogram(df: pd.DataFrame, symbol: str, link: str,
-                    partial: bool = False, squared: bool = False, 
-                    column: str = 'y_plr',
-                    lag_method: str = 'Hyndman') -> None:
+def autocorrelogram(df: pd.DataFrame, partial: bool = False, 
+                    column: str = 'y_plr', lag_method: str = 'Hyndman') -> None:
     """Autocorrelogram/Partial Autocorrelogram plot of a given variable
        inside column.
     Args:
         df (pd.DataFrame): data,
-        symbol (str): Stock index, 
-        link (str): link at with the data are taken,
         partial (bool, optional): to choose between the autocorrelogram
                                   and the partial autocorrelogram.
                                   Defaults to False,
@@ -68,11 +64,7 @@ def autocorrelogram(df: pd.DataFrame, symbol: str, link: str,
         yticks = np.arange(-0.1, 0.1, 0.1)
     else:
         kind = 'Autocorrelogram'
-        ylabel = 'Acf value'
-
-        if squared:
-            z = df[column].to_numpy() ** 2.
-            string = ' Squared'            
+        ylabel = 'Acf value'         
 
         # fft = False to avoid warning
         Aut_Fun_z = acf(z, nlags=maxlag, fft=False)
@@ -100,12 +92,8 @@ def autocorrelogram(df: pd.DataFrame, symbol: str, link: str,
     fancy_legend(leg)
     plt.xlabel('Lag')
     plt.ylabel(ylabel)   
-    plt.suptitle("University of Roma \"Tor Vergata\" - Corso di Metodi"
-               + " Probabilistici e Statistici per i Mercati Finanziari \n"
-               + f" {kind} of S&P 500{string}Percentage Logarithm Returns"
-               + f" from {first_day} to {last_day}")
-    plt.title(f"Path length {n} sample points. Data from Yahoo Finance " 
-              + f"{symbol} - {link}")
+    plt.suptitle()
+    plt.title(f" {kind} of {df.columns[0]} {string} from {first_day} to {last_day}")
     ax.set_xticks(range(start, int(maxlag) + 1))
     ax.set_yticks(yticks)
     plt.xlim((-0.5 + start, maxlag + 0.5))
