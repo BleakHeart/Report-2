@@ -3,17 +3,28 @@ import matplotlib.pyplot as plt
 from scipy.signal import deconvolve
 import pywt
 
+
+def linear_fit(x, y):
+    m, q = np.polyfit(x=x, y=y, deg=1)
+    load_lin = m * x + q
+    return load_lin
+
+
 def normalize(data, data_max, data_min):
     return (data - data_min) / (data_max - data_min)
+
 
 def denormalize(data_normalized, data_max, data_min):
     return data_normalized * (data_max - data_min) + data_min
 
+
 def q1(x):
     return x.quantile(0.025)
 
+
 def q2(x):
     return x.quantile(0.975)
+
 
 def fourierExtrapolation(x, n_predict, n_harm=10):
     n = x.size
@@ -37,6 +48,7 @@ def fourierExtrapolation(x, n_predict, n_harm=10):
         restored_sign += amplitude * np.cos(2 * np.pi * f[i] * t + phase)
     
     return restored_sign + p[0] * t + p[1]
+
 
 def wavelet_coeffs_plot(df, waveletname='sym4', figsize=(10, 10),
                         label_size=10, title_size=14):
@@ -76,6 +88,7 @@ def wavelet_coeffs_plot(df, waveletname='sym4', figsize=(10, 10),
     plt.show()
     return data_l, c_l
 
+
 def wavelet_filter(data, wavelet='sym4', threshold=0.04):
     maxlev = pywt.dwt_max_level(len(data), wavelet)
 
@@ -90,6 +103,7 @@ def wavelet_filter(data, wavelet='sym4', threshold=0.04):
     # Multilevel 1D Inverse Discrete Wavelet Transform
     datarec = pywt.waverec(coeffs, wavelet)
     return datarec
+
 
 def deconvolution(signal, psf, window=96):
     deconv = np.zeros(len(signal))
