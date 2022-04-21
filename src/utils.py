@@ -32,16 +32,16 @@ def fancy_legend(leg):
         lh.set_linewidth(1)
 
 
-def autocorrelogram(df: pd.DataFrame, partial: bool = False, 
-                    column: str = 'y_plr', lag_method: str = 'Hyndman') -> None:
+def autocorrelogram(df: pd.DataFrame, column: str,
+                    partial: bool = False, lag_method: str = 'Hyndman') -> None:
     """Autocorrelogram/Partial Autocorrelogram plot of a given variable
        inside column.
     Args:
-        df (pd.DataFrame): data,
+        df (pd.DataFrame): data must have a datetime index,
+        column (str): df's column to plot,
         partial (bool, optional): to choose between the autocorrelogram
                                   and the partial autocorrelogram.
                                   Defaults to False,
-        column (str, optional): df's column to plot. Defaults to 'y_plr',
         lag_method (str, optional): method to compute the maxlag.
                                     Defaults to 'Hyndman'.
     """
@@ -85,15 +85,14 @@ def autocorrelogram(df: pd.DataFrame, partial: bool = False,
         plt.plot([-1, maxlag+1], [CI]*2, color +'.-.', alpha=0.6, label=text)
         plt.plot([-1, maxlag+1], [-CI]*2, color +'.-.', alpha=0.6)
 
-    first_day = df.loc[0, 'Date']
-    last_day = df.loc[n - 1, 'Date']
+    first_day = df.index[0]
+    last_day = df.index[-1]
     #fig.subplots_adjust(bottom=0.25)
     leg = plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.15), ncol=3)
     fancy_legend(leg)
     plt.xlabel('Lag')
     plt.ylabel(ylabel)   
-    plt.suptitle()
-    plt.title(f" {kind} of {df.columns[0]} {string} from {first_day} to {last_day}")
+    plt.title(f" {kind} of {column} {string} from {first_day} to {last_day}")
     ax.set_xticks(range(start, int(maxlag) + 1))
     ax.set_yticks(yticks)
     plt.xlim((-0.5 + start, maxlag + 0.5))
