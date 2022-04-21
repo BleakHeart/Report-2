@@ -1,7 +1,10 @@
 import numpy as np 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 
-def latex_settings():  
+
+def latex_settings():
+    fig, ax = plt.subplots(constrained_layout=True)  
     fig_width_pt = 390.0    # Get this from LaTeX using \the\columnwidth
     inches_per_pt = 1.0 / 72.27                # Convert pt to inches
     golden_mean = (np.sqrt(5) - 1.0) / 2.0     # Aesthetic ratio
@@ -17,3 +20,4 @@ def latex_settings():
               'axes.axisbelow': True}
 
     mpl.rcParams.update(params)
+    return ax
