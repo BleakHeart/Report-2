@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import deconvolve
+from scipy.signal import deconvolve, find_peaks
 import pywt
+import holidays
 
 
 def linear_fit(x, y):
@@ -111,3 +112,21 @@ def deconvolution(signal, psf, window=96):
         deconv[i*window:(i+1)*window +1] = deconvolve(signal[(i*window) : (i+2)*window], psf)[0]
         deconv[(i+1)*window:(i+2)*window+1] = deconvolve(signal[(i+1)*window:(i+3)*window], psf)[0]
     return deconv
+
+
+def resampling_data(df, feature = 'Load', resample_cost = 'h'):
+    f = {'Hour': 'mean', 'Minutes': 'mean', feature: 'sum'}
+    tmp = df.copy()
+    df_day = tmp.set_index('Date').resample(resample_cost).agg(f)
+    df_day.reset_index(drop=False, inplace=True)
+    df_day['Day'] = df_day.Date.dt.day_of_week
+    poland_holidays = holidays.CountryHoliday('Poland')
+    df_day['Holiday'] = df_day.Date.apply(lambda x: x in poland_holidays)
+    df_day['Day id'] = df_day.Date.dt.day_of_year
+    peaks_up, _  = find_peaks(df_day[feature], distance=5000)
+    peaks_down, _  = find_peaks(-df_day[feature], distance=5000)
+    peaks = np.concatenate(([0], peaks_down, peaks_up, [len(df_day)-1]))
+    df_day.loc[peaks, feature] = np.nan
+    df_day[feature].interpolate(inplace=True)
+
+    return df_day
