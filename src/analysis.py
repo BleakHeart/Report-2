@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.signal import deconvolve, find_peaks
 import pywt
 import holidays
+from statsmodels.tsa.stattools import adfuller, kpss
+import pandas as pd
 
 
 def linear_fit(x, y):
@@ -130,3 +132,52 @@ def resampling_data(df, feature = 'Load', resample_cost = 'h'):
     df_day[feature].interpolate(inplace=True)
 
     return df_day
+
+
+class StationarityTests:
+    def __init__(self, significance=.05):
+        self.SignificanceLevel = significance
+        self.pValue = None
+        self.isStationary = None
+        
+    def ADF_Stationarity_Test(self, timeseries):
+
+        #Dickey-Fuller test:
+        adfTest = adfuller(timeseries, autolag=None, maxlag=1)
+        
+        self.pValue = adfTest[1]
+        
+        if (self.pValue < self.SignificanceLevel):
+            self.isStationary = 'Yes'
+        else:
+            self.isStationary = 'No'
+        
+        dfResults = pd.Series(adfTest[0:4], index=['DF Test Statistic','P-Value','# Lags Used','# Observations Used'])
+        
+        #Add Critical Values
+        for key, value in adfTest[4].items():
+            dfResults[f'Critical Value ({key})'] = value
+
+        df = pd.DataFrame(dfResults, columns=['Dickey-Fuller Test Results'])
+        df.loc['Is the time series stationary?', :] = self.isStationary
+        self.Results = df
+    
+    def kpss_Stationarity_Test(self, timeseries):
+        kpssTest = kpss(timeseries, nlags=1)
+        
+        self.pValue = kpssTest[1]
+        
+        if (self.pValue > self.SignificanceLevel):
+            self.isStationary = 'Yes'
+        else:
+            self.isStationary = 'No'
+        
+        dfResults = pd.Series(kpssTest[0:4], index=['KPSS Test Statistic','P-Value','# Lags Used','# Observations Used'])
+        
+        #Add Critical Values
+        for key, value in kpssTest[3].items():
+            dfResults[f'Critical Value ({key})'] = value
+
+        df = pd.DataFrame(dfResults, columns=['KPSS Test Results'])
+        df.loc['Is the time series stationary?', :] = self.isStationary
+        self.Results = df
