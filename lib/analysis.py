@@ -30,7 +30,7 @@ def q2(x):
 
 
 def fourierExtrapolation(x, n_predict, n_harm=10):
-    n = x.size
+    n = x.size  
 
     t = np.arange(0, n)
     p = np.polyfit(t, x, 1)
@@ -50,10 +50,10 @@ def fourierExtrapolation(x, n_predict, n_harm=10):
         phase = np.angle(x_freqdom[i])
         restored_sign += amplitude * np.cos(2 * np.pi * f[i] * t + phase)
     
-    return restored_sign + p[0] * t + p[1]
+    return restored_sign
 
 
-def wavelet_coeffs_plot(df, waveletname='sym4', figsize=(10, 10),
+def wavelet_coeffs_plot(data, waveletname='sym4', figsize=(10, 10),
                         label_size=10, title_size=14):
     """Plot of wavelen data and coefficients approximation.
 
@@ -64,10 +64,9 @@ def wavelet_coeffs_plot(df, waveletname='sym4', figsize=(10, 10),
     Returns:
         [tuple[array, array]]: wavelen data and coefficients.
     """
-    t = np.arange(len(df))
-    data = df.Load.to_numpy().copy()
-
-    levels = pywt.dwt_max_level(len(data), waveletname)
+    n = len(data)
+    t = np.arange(n)
+    levels = pywt.dwt_max_level(n, waveletname)
     data_l, c_l = pywt.dwt(data, waveletname)
     lws = np.array([0.1 if i < 3 else 0.5 for i in range(levels)])
 
