@@ -45,7 +45,9 @@ def fourierExtrapolation(x, n_predict, n_harm=10):
     t = np.arange(0, n + n_predict)
     restored_sign = np.zeros(t.size)
 
-    for i in indexes[:1 + n_harm * 2]:
+    # We exclude the first index because it represent the zero 
+    # frequency, which corresponds to an infinite period
+    for i in indexes[1:2 + n_harm * 2]:
         amplitude = np.absolute(x_freqdom[i]) / n
         phase = np.angle(x_freqdom[i])
         restored_sign += amplitude * np.cos(2 * np.pi * f[i] * t + phase)
