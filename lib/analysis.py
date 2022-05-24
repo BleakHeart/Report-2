@@ -28,7 +28,18 @@ def q2(x):
     return x.quantile(0.975)
 
 
-def fourierExtrapolation(x, n_predict, n_harm=10):
+def fourierExtrapolation(x: np.array, n_harm: int=10) -> np.array:
+    """Function which selects the first n_harm in the Fourier space and 
+       returns the signal reconstructed by them
+
+    Args:
+        x (np.array): time series used to perform the FFT analysis
+        n_harm (int, optional): number of armonics to select in the Fourier space. Defaults to 10.
+
+    Returns:
+        np.array: signal reconstruction using the n harmonics determined
+    """
+    
     n = x.size  
 
     t = np.arange(0, n)
@@ -41,7 +52,7 @@ def fourierExtrapolation(x, n_predict, n_harm=10):
     indexes = list(range(n))
     indexes.sort(key= lambda i: np.absolute(f[i]))
 
-    t = np.arange(0, n + n_predict)
+    t = np.arange(0, n)
     restored_sign = np.zeros(t.size)
 
     # We exclude the first index because it represent the zero 
@@ -124,6 +135,11 @@ def resampling_data(df, feature = 'Load', resample_cost = 'h'):
 
 
 class StationarityTests:
+    """
+        class designed to perform the Dickey-Fuller and the KPSS stationarity tests 
+        using the Statsmodels python's module
+    """
+    
     def __init__(self, significance=.05):
         self.SignificanceLevel = significance
         self.pValue = None
