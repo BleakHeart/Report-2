@@ -1,18 +1,18 @@
 import numpy as np 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from scipy.stats import norm
-from statsmodels.tsa.stattools import acf, pacf
+import os
 import pandas as pd
+from typing import List
 
 
-def latex_settings():
-    fig, ax = plt.subplots(constrained_layout=True)  
+def latex_settings(nrows=1, ncols=1, height_factor=1.):
+    fig, ax = plt.subplots(nrows, ncols, constrained_layout=True)  
     fig_width_pt = 390.0    # Get this from LaTeX using \the\columnwidth
-    inches_per_pt = 1.0 / 72.27                # Convert pt to inches
-    golden_mean = (np.sqrt(5) - 1.0) / 2.0     # Aesthetic ratio
-    fig_width = fig_width_pt * inches_per_pt   # width in inches
-    fig_height = fig_width * golden_mean       # height in inches
+    inches_per_pt = 1.0 / 72.27                            # Convert pt to inches
+    golden_mean = (np.sqrt(5) - 1.0) / 2.0                 # Aesthetic ratio
+    fig_width = fig_width_pt * inches_per_pt               # width in inches
+    fig_height = fig_width * golden_mean * height_factor   # height in inches
     fig_size = [fig_width, fig_height]
     params = {'backend': 'ps',
               'axes.labelsize': 14,
@@ -32,67 +32,58 @@ def fancy_legend(leg):
         lh.set_linewidth(1)
 
 
-def autocorrelogram(df: pd.DataFrame, column: str,
-                    partial: bool = False, lag_method: str = 'Hyndman') -> None:
-    """Autocorrelogram/Partial Autocorrelogram plot of a given variable
-       inside column.
+def plot_data(df: pd.DataFrame, file: str, lw: float, title: str = None,
+              peaks: np.ndarray = None, feature: str = 'Load') -> None:
+    ax = latex_settings()
+    ax.plot(df['Date'], df[feature], 'b', lw=lw)
+    
+    if isinstance(peaks, np.ndarray):    
+        ax.plot(df['Date'][peaks], df[feature][peaks], 'rx')
+    
+    ax.grid()
+    ax.set_xlabel('Date')
+    ax.set_ylabel(f'{feature} (MWh)')
+    ax.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
+    plt.title(title)
+    
+    filepath = '../Images/'
+    if os.path.isfile(filepath + file):
+        pass
+    else:    
+        plt.savefig(f'{filepath}{file}.png', dpi=800, transparent=True)
+    
+    plt.show()
+    
+
+def latex_table_generator(df, filepath, float_format=None):
+    n_cols = len(df.columns)
+    latex_cols = [r'\textbf{%s}' %col for col in df.columns]
+    with open(filepath, 'w') as tf:
+        tf.write(
+            df.to_latex(
+                index=False,
+                float_format=float_format,
+                column_format='c'*n_cols,
+                header=latex_cols,
+                escape=False
+                )
+        )
+
+
+def int_from_str(string: str) -> int:
+    """Exctract an integer number from a string.
     Args:
-        df (pd.DataFrame): data must have a datetime index,
-        column (str): df's column to plot,
-        partial (bool, optional): to choose between the autocorrelogram
-                                  and the partial autocorrelogram.
-                                  Defaults to False,
-        lag_method (str, optional): method to compute the maxlag.
-                                    Defaults to 'Hyndman'.
+        string (str): string containing a number.
+    Returns:
+        int: integer number inside the string.
     """
-    z = df[column].to_numpy()
-    n = len(z)
-    
-    if lag_method == 'Default':
-        maxlag = np.ceil(10. * np.log10(n))
-    elif lag_method == 'Box-Jenkins':
-        maxlag = np.ceil(np.sqrt(n) + 45)
-    elif lag_method == 'Hyndman':
-        maxlag = np.min((n / 4., 10.))
+    num = int(''.join(filter(str.isdigit, string)))
+    return num
 
-    string = ' '
-    if partial:
-        kind = 'Partial Autocorrelogram'
-        ylabel = 'Pacf value'
-        Aut_Fun_z = pacf(z, nlags=maxlag)[1:]
-        start = 1
-        yticks = np.arange(-0.1, 0.1, 0.1)
-    else:
-        kind = 'Autocorrelogram'
-        ylabel = 'Acf value'         
 
-        # fft = False to avoid warning
-        Aut_Fun_z = acf(z, nlags=maxlag, fft=False)
-        start = 0
-        yticks = np.arange(0, 1.25, 0.25)
+def get_result_filenames(results_path: str, freq: str) -> List[str]:
+    all_files = os.listdir(results_path)
+    files = [file for file in all_files if file.split('_')[1] == freq]
 
-    fig, ax = plt.subplots(figsize=(15, 8))
-    plt.grid()
-    for i, y in enumerate(Aut_Fun_z, start=start):
-        if y > 0:
-            plt.vlines(x=i, ymax=y, ymin=0, colors='k')
-        elif y < 0:
-            plt.vlines(x=i, ymax=0, ymin=y, colors='k')
-    
-    for ci, color in zip(['0.90', '0.95', '0.99'], ['r', 'b', 'g']):
-        CI = norm.ppf((1. + float(ci)) / 2.) / np.sqrt(n)
-        text = f"ci {int(float(ci) * 100.)}%"  
-        plt.plot([-1, maxlag+1], [CI]*2, color +'.-.', alpha=0.6, label=text)
-        plt.plot([-1, maxlag+1], [-CI]*2, color +'.-.', alpha=0.6)
-
-    first_day = df.index[0]
-    last_day = df.index[-1]
-    #fig.subplots_adjust(bottom=0.25)
-    leg = plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.15), ncol=3)
-    fancy_legend(leg)
-    plt.xlabel('Lag')
-    plt.ylabel(ylabel)   
-    plt.title(f" {kind} of {column} {string} from {first_day} to {last_day}")
-    ax.set_xticks(range(start, int(maxlag) + 1))
-    ax.set_yticks(yticks)
-    plt.xlim((-0.5 + start, maxlag + 0.5))
+    files.sort(key=int_from_str, reverse=False)
+    return files
