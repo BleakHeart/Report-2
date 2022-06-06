@@ -39,16 +39,25 @@ def add_linear_seasonal_terms(df: pd.DataFrame, new_col: str = 'Load_denoised',
 def psf_forecasting(df: pd.DataFrame, cut_day: str,
                     feature: str = 'Load_real_comp',
                     lin_seasonal: str = 'Load_lin_seasonal') -> pd.DataFrame:
-    """_summary_
+    """Function which implements the Pattern Sequence Forecast. 
+       In first place it computes the PSF for the working days and the
+       holidays then it constructs the forecasts using the knowledge of
+       the future days.
 
     Args:
-        df (pd.DataFrame): _description_
-        cut_day (str): _description_
-        feature (str, optional): _description_. Defaults to 'Load_real_comp'.
-        lin_seasonal (str, optional): _description_. Defaults to 'Load_lin_seasonal'.
+        df (pd.DataFrame): Table which contains the information of the
+                           timeseries and if a day is an holiday or not;
+        cut_day (str): day used to split previous Table into train and
+                       test set;
+        feature (str, optional): timeseries information used to perform 
+                                 the algorithm.
+                                 Defaults to 'Load_real_comp'.
+        lin_seasonal (str, optional): Column in df to use as linear and
+                                      seasonal component.
+                                      Defaults to 'Load_lin_seasonal'.
 
     Returns:
-        pd.DataFrame: _description_
+        pd.DataFrame: forecasts
     """
     train_set = df[df.index < cut_day].copy()
     test_set = df[df.index >= cut_day].copy()
