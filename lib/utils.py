@@ -6,13 +6,13 @@ import pandas as pd
 from typing import List
 
 
-def latex_settings(nrows=1, ncols=1, height_factor=1.):
+def latex_settings(nrows=1, ncols=1, height=1., length=1.):
     fig, ax = plt.subplots(nrows, ncols, constrained_layout=True)  
     fig_width_pt = 390.0    # Get this from LaTeX using \the\columnwidth
     inches_per_pt = 1.0 / 72.27                            # Convert pt to inches
     golden_mean = (np.sqrt(5) - 1.0) / 2.0                 # Aesthetic ratio
-    fig_width = fig_width_pt * inches_per_pt               # width in inches
-    fig_height = fig_width * golden_mean * height_factor   # height in inches
+    fig_width = fig_width_pt * inches_per_pt * length      # width in inches
+    fig_height = fig_width * golden_mean * height          # height in inches
     fig_size = [fig_width, fig_height]
     params = {'backend': 'ps',
               'axes.labelsize': 14,
@@ -55,15 +55,15 @@ def plot_data(df: pd.DataFrame, file: str, lw: float, title: str = None,
     plt.show()
     
 
-def latex_table_generator(df, filepath, float_format=None):
+def latex_table_generator(df, filepath, float_format=None, index=False):
     n_cols = len(df.columns)
     latex_cols = [r'\textbf{%s}' %col for col in df.columns]
     with open(filepath, 'w') as tf:
         tf.write(
             df.to_latex(
-                index=False,
+                index=index,
                 float_format=float_format,
-                column_format='c'*n_cols,
+                column_format='c' * (n_cols + 1 * index),
                 header=latex_cols,
                 escape=False
                 )
