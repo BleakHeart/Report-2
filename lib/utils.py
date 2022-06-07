@@ -34,7 +34,7 @@ def fancy_legend(leg):
 
 def plot_data(df: pd.DataFrame, file: str, lw: float, title: str = None,
               peaks: np.ndarray = None, feature: str = 'Load') -> None:
-    ax = latex_settings()
+    fig, ax = latex_settings()
     ax.plot(df['Date'], df[feature], 'b', lw=lw)
     
     if isinstance(peaks, np.ndarray):    
