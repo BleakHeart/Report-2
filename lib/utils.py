@@ -1,5 +1,4 @@
 import numpy as np 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
@@ -7,6 +6,7 @@ from typing import List
 
 
 def latex_settings(nrows=1, ncols=1, height=1., length=1.):
+    import matplotlib as mpl
     fig, ax = plt.subplots(nrows, ncols, constrained_layout=True)  
     fig_width_pt = 390.0    # Get this from LaTeX using \the\columnwidth
     inches_per_pt = 1.0 / 72.27                            # Convert pt to inches
@@ -22,7 +22,7 @@ def latex_settings(nrows=1, ncols=1, height=1., length=1.):
               'figure.figsize': fig_size,  
               'axes.axisbelow': True}
 
-    mpl.rcParams.update(params)
+    #mpl.rcParams.update(params)
     return ax
 
 
