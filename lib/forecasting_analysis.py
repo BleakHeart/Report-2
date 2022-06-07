@@ -95,9 +95,9 @@ def psf_forecasting(df: pd.DataFrame, cut_day: str,
 
 def sarimax_forecasting(df, cut_day, arima_args, seasonal_args):
     train_set = df[df.index < cut_day]
+    # (p,d,q)(P,D,Q,S)
     # weekly: (1,0,9) x (2,1,0,52)
     # daily: (4,0,5) x (1,1,0,7)
-    # hourly: (8,0,30) x (1,1,1,24)
     model = SARIMAX(
         train_set, order=arima_args,
         seasonal_order=seasonal_args,
